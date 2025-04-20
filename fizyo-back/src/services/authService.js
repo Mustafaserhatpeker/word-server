@@ -26,16 +26,20 @@ export const registerUser = async (email, password, name) => {
 
 export const loginUser = async (email, password) => {
     const user = await User.findOne({ email }).select('+password');
+  
     if (!user) {
-        throw AppError.unauthorized('Email veya şifre hatalı.');
+      throw AppError.unauthorized('Email veya şifre hatalı.');
     }
-    const isPasswordCorrect = await user.comparePassword(password);
+  
+    const isPasswordCorrect = await user.comparePassword(password); 
+  
     if (!isPasswordCorrect) {
-        throw AppError.unauthorized('şifre hatalı.');
+      throw AppError.unauthorized('Şifre hatalı.');
     }
+  
     return {
-        id: user._id,
-        name: user.name,
-        email: user.email,
+      id: user._id,
+      name: user.name,
+      email: user.email,
     };
-}
+  };
