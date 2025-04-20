@@ -1,16 +1,13 @@
+
 import User from '../models/User.js';
 
-// GET /users
-export const getAllUsers = async () => {
-  const users = await User.find().select('-password'); // şifreyi response'tan çıkar
-  return users;
-};
+
 
 // POST /register
 export const registerUser = async (email, password, name) => {
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-        throw new Error('User already exists');
+        throw new Error('Bu email adresi zaten kayıtlı.');
     }
 
     // Şifre hash'lemesi burada yapılabilir (opsiyonel)

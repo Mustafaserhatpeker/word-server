@@ -1,13 +1,6 @@
-import * as userService from '../services/userService.js';
+import * as authService from '../services/authService.js';
 
-export const getAllUsersController = async (req, res, next) => {
-  try {
-    const users = await userService.getAllUsers();
-    res.json(users);
-  } catch (error) {
-    next(error);
-  }
-};
+
 
 export const registerController = async (req, res, next) => {
   try {
@@ -15,7 +8,7 @@ export const registerController = async (req, res, next) => {
     if (!email || !password || !name) {
       return res.status(400).json({ message: 'Email, password ve name alanları zorunludur.' });
     }
-    const newUser = await userService.registerUser(email, password, name);
+    const newUser = await authService.registerUser(email, password, name);
    
     res.status(201).json(newUser);
   } catch (error) {
