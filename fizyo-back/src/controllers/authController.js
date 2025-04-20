@@ -10,7 +10,7 @@ export const registerController = catchAsync(async (req, res, next) => {
   sendResponse(res, 201, { user }, 'Kayıt başarılı');
 });
 
-// src/controllers/authController.js
+
 
 export const loginController = catchAsync(async (req, res, next) => {
     const { email, password } = req.body;
