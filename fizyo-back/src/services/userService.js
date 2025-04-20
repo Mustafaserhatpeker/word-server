@@ -1,4 +1,4 @@
-import { find, create } from '../models/User';
+import { find, create } from '../models/User.js';
 
 export function getAllUsers() { return find(); }
 

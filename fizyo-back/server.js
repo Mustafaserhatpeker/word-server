@@ -1,8 +1,8 @@
 require('dotenv').config();
 import express, { json } from 'express';
 const app = express();
-import routes from './src/routes';
-import { connectDB } from './src/config/database';
+import routes from './src/routes/index.js';
+import { connectDB } from './src/config/database.js';
 
 app.use(json());
 app.use('/api', routes);

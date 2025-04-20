@@ -1,6 +1,6 @@
-import { getAllUsers, createUser } from '../services/userService';
+import { getAllUsers, createUser } from '../services/userService.js';
 
-export async function getAllUsers(req, res, next) {
+export async function getAllUsersController(req, res, next) {
   try {
     const users = await getAllUsers();
     res.json(users);
@@ -9,7 +9,7 @@ export async function getAllUsers(req, res, next) {
   }
 }
 
-export async function createUser(req, res, next) {
+export async function createUserController(req, res, next) {
   try {
     const newUser = await createUser(req.body);
     res.status(201).json(newUser);
