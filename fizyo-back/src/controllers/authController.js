@@ -10,14 +10,17 @@ export const registerController = catchAsync(async (req, res, next) => {
   sendResponse(res, 201, { user }, 'Kayıt başarılı');
 });
 
+// src/controllers/authController.js
+
 export const loginController = catchAsync(async (req, res, next) => {
-  const { email, password } = req.body;
-
-  if (!email || !password) {
-    return next(AppError.badRequest('Email ve şifre gereklidir.'));
-  }
-
-  const user = await authService.loginUser(email, password);
-
-  sendResponse(res, 200, { user }, 'Giriş başarılı');
-});
+    const { email, password } = req.body;
+  
+    if (!email || !password) {
+      return next(AppError.badRequest('Email ve şifre gereklidir.'));
+    }
+  
+    const { user, token } = await authService.loginUser(email, password);
+  
+    sendResponse(res, 200, { token }, 'Giriş başarılı');
+  });
+  
