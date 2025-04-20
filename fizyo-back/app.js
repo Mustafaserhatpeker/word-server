@@ -5,14 +5,14 @@ import routes from './src/routes/index.js';
 import { errorHandler } from './src/middlewares/erorHandler.js';
 import cors from 'cors';
 
-app.use(cors());
+
 // Ortam değişkenlerini yükle
 dotenv.config();
 
 // Express app başlat
 const app = express();
 
-
+app.use(cors());
 app.use(express.json());
 
 
