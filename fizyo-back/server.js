@@ -1,19 +1,28 @@
-require('dotenv').config();
-import express, { json } from 'express';
-const app = express();
-import routes from './src/routes/index.js';
+import express from 'express';
+import dotenv from 'dotenv';
 import { connectDB } from './src/config/database.js';
+import routes from './src/routes/index.js';
 
-app.use(json());
+
+// Ortam değişkenlerini yükle
+dotenv.config();
+
+// Express app başlat
+const app = express();
+
+
+app.use(express.json());
+
+
 app.use('/api', routes);
 
-// Hata yakalayıcı middleware
-app.use(require('./src/middlewares/errorHandler'));
 
-// Sunucu başlat
+
+
 const PORT = process.env.PORT || 5000;
+
 connectDB().then(() => {
   app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`✅ Server running on http://localhost:${PORT}`);
   });
 });
