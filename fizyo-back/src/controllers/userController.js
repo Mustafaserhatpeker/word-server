@@ -1,11 +1,9 @@
 import * as userService from '../services/userService.js';
-
-export const getAllUsersController = async (req, res, next) => {
-  try {
+import { catchAsync } from '../utils/catchAsync.js';
+import { sendResponse } from '../utils/sendResponse.js';
+export const getAllUsersController = catchAsync(async (req, res, next) => {
+   
     const users = await userService.getAllUsers();
-    res.json(users);
-  } catch (error) {
-    next(error);
+    sendResponse(res, 200, users);
   }
-};
-
+);

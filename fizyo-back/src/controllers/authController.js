@@ -1,17 +1,12 @@
 import * as authService from '../services/authService.js';
+import { catchAsync } from '../utils/catchAsync.js';
+import { sendResponse } from '../utils/sendResponse.js';
 
 
 
-export const registerController = async (req, res, next) => {
-  try {
-    const {email, password, name} = req.body;
-    if (!email || !password || !name) {
-      return res.status(400).json({ message: 'Email, password ve name alanları zorunludur.' });
-    }
-    const newUser = await authService.registerUser(email, password, name);
-   
-    res.status(201).json(newUser);
-  } catch (error) {
-    next(error);
-  }
-};
+export const registerController = catchAsync(async (req, res, next) => {
+    const { email, password, name } = req.body;
+    const user = await authService.registerUser(email, password, name);
+  
+    sendResponse(res, 201, { user }, 'Kayıt başarılı');
+  });
