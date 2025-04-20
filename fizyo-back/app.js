@@ -3,7 +3,9 @@ import dotenv from 'dotenv';
 
 import routes from './src/routes/index.js';
 import { errorHandler } from './src/middlewares/erorHandler.js';
+import cors from 'cors';
 
+app.use(cors());
 // Ortam değişkenlerini yükle
 dotenv.config();
 
