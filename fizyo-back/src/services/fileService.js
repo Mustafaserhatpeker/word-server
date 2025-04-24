@@ -1,12 +1,24 @@
 // src/services/fileService.js
 import path from 'path';
 import fs from 'fs';
+import File from '../models/File.js';
 
-export const saveFileInfo = async (filename) => {
-  // Gerekirse veritabanına yazabilirsin, şimdilik sadece adını döndürelim
-  return {
+export const saveFileInfo = async (filename, originalName, mimetype, size) => {
+  const fileData = await File.create({
     filename,
+    originalName,
     path: `/uploads/${filename}`,
+    mimetype,
+    size,
+  });
+
+  return {
+    id: fileData._id,
+    filename: fileData.filename,
+    originalName: fileData.originalName,
+    path: fileData.path,
+    mimetype: fileData.mimetype,
+    size: fileData.size,
   };
 };
 

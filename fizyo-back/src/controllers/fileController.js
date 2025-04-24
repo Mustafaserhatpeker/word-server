@@ -2,15 +2,19 @@
 import { saveFileInfo, getFilePath } from '../services/fileService.js';
 import { sendResponse } from '../utils/sendResponse.js';
 
+
 export const uploadFileController = async (req, res, next) => {
   if (!req.file) {
     return res.status(400).json({ message: 'Dosya yüklenemedi.' });
   }
 
-  const fileInfo = await saveFileInfo(req.file.filename);
+  const { filename, originalname, mimetype, size } = req.file;
 
-  sendResponse(res, 200, fileInfo, 'Dosya başarıyla yüklendi.');
+  const fileInfo = await saveFileInfo(filename, originalname, mimetype, size);
+
+  sendResponse(res, 200, fileInfo, 'Dosya başarıyla yüklendi ve kaydedildi.');
 };
+
 
 export const getFileController = (req, res, next) => {
   try {
