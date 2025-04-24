@@ -4,7 +4,7 @@ import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 
 const doctorSchema = new mongoose.Schema({
-  email: {
+  username: {
     type: String,
     required: true,
     unique: true,
@@ -12,26 +12,22 @@ const doctorSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true,
-    select: false, // şifre veritabanında varsayılan olarak döndürülmez
-  },
-  name: {
-    type: String,
-    required: true,
+    select: false, 
   },
 });
 
-// Şifreyi hash'leme (pre-save middleware)
-doctorSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next(); // Şifre değiştirilmediyse, işleme devam etme
 
-  const salt = await bcrypt.genSalt(10); // 10, bcrypt'teki salt rounds sayısıdır
-  this.password = await bcrypt.hash(this.password, salt); // Şifreyi hash'le
+doctorSchema.pre('save', async function (next) {
+  if (!this.isModified('password')) return next(); 
+
+  const salt = await bcrypt.genSalt(10); 
+  this.password = await bcrypt.hash(this.password, salt); 
   next();
 });
 
-// Şifreyi kontrol etme metodu
+
 doctorSchema.methods.comparePassword = async function (candidatePassword) {
-  return await bcrypt.compare(candidatePassword, this.password); // Şifreyi karşılaştır
+  return await bcrypt.compare(candidatePassword, this.password); 
 };
 
 const Doctor = mongoose.model('doctor', doctorSchema);
