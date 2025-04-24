@@ -4,7 +4,7 @@ import {  registerController,loginController } from '../controllers/authControll
 import { registerDoctorController,loginDoctorController } from '../controllers/doctorController.js';
 import { protect } from '../middlewares/protectionHandler.js';
 const router = express.Router();
-
+//selam
 
 router.post('/register', registerController);
 router.post('/register/doctor', registerDoctorController);
