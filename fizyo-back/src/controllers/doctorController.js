@@ -1,4 +1,4 @@
-import { loginDoctor,registerDoctor } from "../services/doctorService";
+import { loginDoctor,registerDoctor } from "../services/doctorService.js";
 
 import { sendResponse } from "../utils/sendResponse.js";
 import { catchAsync } from "../utils/catchAsync.js";
