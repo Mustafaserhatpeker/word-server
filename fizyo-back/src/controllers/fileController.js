@@ -1,4 +1,3 @@
-// src/controllers/fileController.js
 import { saveFileInfo, getFileInfo } from '../services/fileService.js';
 import { sendResponse } from '../utils/sendResponse.js';
 
