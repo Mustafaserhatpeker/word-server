@@ -4,7 +4,7 @@ import { signToken } from '../utils/jwtSign.js';
 import AppError from '../utils/AppError.js';
 
 
-export const registerUser = async (username, password) => {
+export const registerDoctor = async (username, password) => {
     const existingUser = await Doctor.findOne({ username });
     if (existingUser) {
         throw AppError.conflict('Bu Doktor zaten kayıtlı.');
@@ -27,7 +27,7 @@ export const registerUser = async (username, password) => {
 
 
 
-export const loginUser = async (username, password) => {
+export const loginDoctor = async (username, password) => {
   const user = await Doctor.findOne({ username }).select('+password');
 
   if (!user) {
