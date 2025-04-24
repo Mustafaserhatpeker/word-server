@@ -28,7 +28,7 @@ export const registerUser = async (username, password) => {
 
 
 export const loginUser = async (username, password) => {
-  const user = await User.findOne({ username }).select('+password');
+  const user = await Doctor.findOne({ username }).select('+password');
 
   if (!user) {
     throw AppError.unauthorized('username veya şifre hatalı.');
@@ -44,7 +44,6 @@ export const loginUser = async (username, password) => {
   return {
     user: {
       id: user._id,
-      name: user.name,
       username: user.username,
     },
     token,
