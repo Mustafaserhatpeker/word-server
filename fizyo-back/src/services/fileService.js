@@ -22,12 +22,25 @@ export const saveFileInfo = async (filename, originalName, mimetype, size) => {
   };
 };
 
-export const getFilePath = (filename) => {
+export const getFileInfo = async (filename) => {
+  const fileRecord = await File.findOne({ filename });
+
+  if (!fileRecord) {
+    const error = new Error('Dosya kaydı bulunamadı.');
+    error.statusCode = 404;
+    throw error;
+  }
+
   const filePath = path.resolve(`./src/uploads/${filename}`);
 
   if (!fs.existsSync(filePath)) {
-    throw new Error('Dosya bulunamadı.');
+    const error = new Error('Dosya fiziksel olarak bulunamadı.');
+    error.statusCode = 404;
+    throw error;
   }
 
-  return filePath;
+  return {
+    fileRecord,
+    filePath,
+  };
 };
