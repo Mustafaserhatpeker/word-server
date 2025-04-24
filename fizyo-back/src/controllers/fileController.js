@@ -16,11 +16,28 @@ export const uploadFileController = async (req, res, next) => {
 };
 
 
-export const getFileController = (req, res, next) => {
+export const getFileController = async (req, res, next) => {
   try {
-    const filePath = getFilePath(req.params.filename);
+    const { filename } = req.params;
+
+    // Veritabanında dosya kaydını bul
+    const fileRecord = await File.findOne({ filename });
+
+    if (!fileRecord) {
+      return res.status(404).json({ message: 'Dosya kaydı bulunamadı.' });
+    }
+
+    // Fiziksel dosya yolunu oluştur
+    const filePath = path.resolve(`./src/uploads/${filename}`);
+
+    // Dosya gerçekten sistemde var mı kontrol et
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ message: 'Dosya fiziksel olarak bulunamadı.' });
+    }
+
+    // Dosyayı gönder
     res.sendFile(filePath);
   } catch (err) {
-    res.status(404).json({ message: err.message });
+    res.status(500).json({ message: 'Dosya getirilirken hata oluştu.', error: err.message });
   }
 };
