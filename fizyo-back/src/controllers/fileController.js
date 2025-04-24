@@ -11,9 +11,11 @@ export const uploadFileController = async (req, res, next) => {
 
   const fileInfo = await saveFileInfo(filename, originalname, mimetype, size);
 
-  sendResponse(res, 200, fileInfo, 'Dosya başarıyla yüklendi ve kaydedildi.');
-};
+  // Dosya URL'sini oluştur
+  const fileUrl = `${req.protocol}://${req.get('host')}/uploads/${filename}`;
 
+  sendResponse(res, 200, { ...fileInfo, url: fileUrl }, 'Dosya başarıyla yüklendi ve kaydedildi.');
+};
 
 
 
@@ -21,11 +23,14 @@ export const getFileController = async (req, res, next) => {
   try {
     const { filename } = req.params;
 
-    const { fileRecord, filePath } = await getFileInfo(filename);
+    const { fileRecord } = await getFileInfo(filename);
 
-    
-    res.type(fileRecord.mimetype);
-    res.sendFile(filePath);
+    const fileUrl = `${req.protocol}://${req.get('host')}/uploads/${filename}`;
+
+    res.status(200).json({
+      ...fileRecord.toObject(),
+      url: fileUrl
+    });
   } catch (err) {
     res.status(err.statusCode || 500).json({ message: err.message });
   }
