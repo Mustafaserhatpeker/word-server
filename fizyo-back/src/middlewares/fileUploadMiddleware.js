@@ -13,12 +13,18 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-  // örnek: sadece jpg ve png kabul edilsin
-  if (file.mimetype.startsWith('image/')) {
-    cb(null, true);
-  } else {
-    cb(new Error('Sadece resim dosyaları yüklenebilir.'), false);
-  }
-};
+    const allowedTypes = ['image/', 'video/'];
+  
+    const isAllowed = allowedTypes.some((type) =>
+      file.mimetype.startsWith(type)
+    );
+  
+    if (isAllowed) {
+      cb(null, true);
+    } else {
+      cb(new Error('Sadece resim veya video dosyaları yüklenebilir.'), false);
+    }
+  };
+  
 
 export const uploadSingleFile = multer({ storage, fileFilter }).single('file');
