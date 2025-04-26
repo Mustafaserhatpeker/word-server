@@ -12,26 +12,30 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true,
-    select: false, // şifre veritabanında varsayılan olarak döndürülmez
+    select: false, 
   },
-  name: {
+  username: {
     type: String,
     required: true,
   },
+  activeGames: {
+    type: [String], 
+    default: [],
+  },
+
 });
 
-// Şifreyi hash'leme (pre-save middleware)
 userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next(); // Şifre değiştirilmediyse, işleme devam etme
+  if (!this.isModified('password')) return next(); 
 
-  const salt = await bcrypt.genSalt(10); // 10, bcrypt'teki salt rounds sayısıdır
-  this.password = await bcrypt.hash(this.password, salt); // Şifreyi hash'le
+  const salt = await bcrypt.genSalt(10); 
+  this.password = await bcrypt.hash(this.password, salt); 
   next();
 });
 
 // Şifreyi kontrol etme metodu
 userSchema.methods.comparePassword = async function (candidatePassword) {
-  return await bcrypt.compare(candidatePassword, this.password); // Şifreyi karşılaştır
+  return await bcrypt.compare(candidatePassword, this.password); 
 };
 
 const User = mongoose.model('User', userSchema);
