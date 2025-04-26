@@ -4,7 +4,7 @@ import { signToken } from '../utils/jwtSign.js';
 import AppError from '../utils/AppError.js';
 
 
-export const registerUser = async (email, password, name) => {
+export const registerUser = async (email, password, username) => {
     const existingUser = await User.findOne({ email });
     if (existingUser) {
         throw AppError.conflict('Bu email adresi zaten kayıtlı.');
@@ -14,12 +14,12 @@ export const registerUser = async (email, password, name) => {
     const user = await User.create({
         email,
         password,
-        name,
+        username,
     });
 
     return {
         id: user._id,
-        name: user.name,
+        username: user.username,
         email: user.email,
     };
 };

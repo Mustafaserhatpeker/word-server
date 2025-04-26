@@ -5,8 +5,8 @@ import AppError from '../utils/AppError.js';
 
 export const registerController = catchAsync(async (req, res, next) => {
   console.log('Register controller called');
-  const { email, password, name } = req.body;
-  const user = await authService.registerUser(email, password, name);
+  const { email, password, username } = req.body;
+  const user = await authService.registerUser(email, password, username);
 
   sendResponse(res, 201, { user }, 'Kayıt başarılı');
 });
