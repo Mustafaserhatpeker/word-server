@@ -7,3 +7,11 @@ export const getAllUsersController = catchAsync(async (req, res, next) => {
     sendResponse(res, 200, users);
   }
 );
+
+export const getUserByIdController = catchAsync(async (req, res, next) => {
+  const userId = req.user.id;
+  console.log('User ID:', userId); // Debugging line
+    const user = await userService.getUserById(userId);
+    sendResponse(res, 200, user);
+  }
+);

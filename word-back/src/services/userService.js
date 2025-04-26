@@ -8,6 +8,7 @@ export const getAllUsers = async () => {
 
 
 export const getUserById = async (userId) => {
+  console.log('User ID:', userId); 
   const user = await User.findById(userId).select('-password'); 
   if (!user) {
     throw new Error('User not found');
