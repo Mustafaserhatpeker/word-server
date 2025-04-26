@@ -18,10 +18,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  activeGames: {
-    type: [String], 
-    default: [],
-  },
+ 
 
 });
 
