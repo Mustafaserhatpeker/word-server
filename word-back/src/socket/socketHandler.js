@@ -1,5 +1,6 @@
 // src/socket/socketHandler.js
-
+import jwt from 'jsonwebtoken';
+import { addToQueue, tryMatchPlayers } from './queues.js';
 
 export const registerSocketHandlers = (io) => {
     io.use((socket, next) => {
@@ -18,6 +19,7 @@ export const registerSocketHandlers = (io) => {
     io.on('connection', (socket) => {
         console.log(`🔌 Bağlandı: ${socket.user.id}`);
 
+        // Oyuna katılma
         socket.on('join_game_queue', (gameType) => {
             if (!['2dk', '5dk', '12saat', '24saat'].includes(gameType)) {
                 return socket.emit('error', 'Geçersiz oyun türü');
@@ -28,12 +30,13 @@ export const registerSocketHandlers = (io) => {
             tryMatchPlayers(gameType, io);
         });
 
+        // Kelime gönderimi
         socket.on('word_submission', (word) => {
-            // Burada kelime girişi yapılır, ilgili oyuncunun sırası kontrol edilir
             console.log(`📝 ${socket.user.id} kelime yazdı: ${word}`);
             socket.to(socket.roomId).emit('word_submission', socket.user.id, word);
         });
 
+        // Bağlantı kopması
         socket.on('disconnect', () => {
             Object.keys(gameQueues).forEach((type) => {
                 removeFromQueue(type, socket.id);
