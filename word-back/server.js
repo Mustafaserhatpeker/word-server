@@ -5,7 +5,7 @@ import app from './app.js';
 import { connectDB } from './src/config/database.js';
 import { registerSocketHandlers } from './src/socket/socketHandler.js';
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 // Express app'i HTTP sunucusuna sarıyoruz
 const server = http.createServer(app);
