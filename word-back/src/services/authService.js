@@ -1,27 +1,27 @@
-
+//authService.js
 import User from '../models/User.js';
 import { signToken } from '../utils/jwtSign.js';
 import AppError from '../utils/AppError.js';
 
 
 export const registerUser = async (email, password, username) => {
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-        throw AppError.conflict('Bu email adresi zaten kayıtlı.');
-    }
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    throw AppError.conflict('Bu email adresi zaten kayıtlı.');
+  }
 
-    
-    const user = await User.create({
-        email,
-        password,
-        username,
-    });
 
-    return {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-    };
+  const user = await User.create({
+    email,
+    password,
+    username,
+  });
+
+  return {
+    id: user._id,
+    username: user.username,
+    email: user.email,
+  };
 };
 
 
