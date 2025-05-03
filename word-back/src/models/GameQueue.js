@@ -11,7 +11,7 @@ const gameQueueSchema = new mongoose.Schema({
     gameType: {
         type: String,
         required: true,
-        enum: ['2dk', '5dk', '12s', '24s'], // Oyun türü
+        enum: ['2dk', '5dk', '12s', '24s'],
     },
     joinedAt: {
         type: Date,
