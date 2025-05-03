@@ -1,5 +1,5 @@
 // src/socket/socketHandler.js
-import { addToQueue, tryMatchPlayers, removeFromQueue } from './queues.js';
+import { startGame } from './gameHandler.js';
 
 export const registerSocketHandlers = (io) => {
     io.use((socket, next) => {
@@ -26,6 +26,12 @@ export const registerSocketHandlers = (io) => {
             console.log(`🎮 ${socket.user.id} ${gameType} kuyruğuna katıldı`);
             addToQueue(gameType, socket);
             tryMatchPlayers(gameType, io);
+        });
+
+        socket.on('word_submission', (word) => {
+            // Burada kelime girişi yapılır, ilgili oyuncunun sırası kontrol edilir
+            console.log(`📝 ${socket.user.id} kelime yazdı: ${word}`);
+            socket.to(socket.roomId).emit('word_submission', socket.user.id, word);
         });
 
         socket.on('disconnect', () => {
