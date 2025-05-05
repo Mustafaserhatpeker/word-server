@@ -1,5 +1,5 @@
 export const handleRoomJoin = (io, socket, roomMessages, roomWaitList, roomInitialized, roomTurn, roomTimers, getUsername) => {
-    socket.on('joinRoom', (roomId) => {
+    socket.on('joinRoom', ({ roomId, timerDuration }) => { // Front-end'den süre alınıyor
         const username = getUsername();
         if (!username) return;
 
@@ -36,6 +36,10 @@ export const handleRoomJoin = (io, socket, roomMessages, roomWaitList, roomIniti
 
             io.to(roomId).emit('systemMessage', `🎲 ${firstPlayer} will start first.`);
 
+            // Süreyi kaydet
+            const durationInMs = (timerDuration || 2) * 60 * 1000; // Varsayılan süre: 2 dakika
+            roomTimers[roomId] = { duration: durationInMs };
+
             // İlk süreyi başlat
             startTurnTimer(io, roomId, firstPlayer, roomTimers, roomMessages, roomTurn);
         }
@@ -44,16 +48,21 @@ export const handleRoomJoin = (io, socket, roomMessages, roomWaitList, roomIniti
     socket.on('leaveRoom', (roomId) => {
         const username = getUsername();
         socket.leave(roomId);
-        clearTimeout(roomTimers[roomId]);
+        clearTimeout(roomTimers[roomId]?.timeoutId);
         io.to(roomId).emit('systemMessage', `${username} has left the room`);
     });
 };
 
 // Timer başlatıcı fonksiyon
 function startTurnTimer(io, roomId, username, roomTimers, roomMessages, roomTurn) {
-    clearTimeout(roomTimers[roomId]);
+    // Oda süresini al
+    const duration = roomTimers[roomId]?.duration || (2 * 60 * 1000); // Varsayılan süre: 2 dakika
 
-    roomTimers[roomId] = setTimeout(() => {
+    // Daha önceki zamanlayıcıyı temizle
+    clearTimeout(roomTimers[roomId]?.timeoutId);
+
+    // Yeni zamanlayıcıyı başlat
+    roomTimers[roomId].timeoutId = setTimeout(() => {
         io.to(roomId).emit('systemMessage', `⏰ ${username} did not respond in time. Room is closed.`);
         const sockets = Array.from(io.sockets.adapter.rooms.get(roomId) || []);
         sockets.forEach((id) => {
@@ -65,7 +74,7 @@ function startTurnTimer(io, roomId, username, roomTimers, roomMessages, roomTurn
         delete roomMessages[roomId];
         delete roomTurn[roomId];
         delete roomTimers[roomId];
-    }, 2 * 60 * 1000); // 2 dakika
+    }, duration); // Dinamik süre kullanılıyor
 }
 
 export { startTurnTimer };

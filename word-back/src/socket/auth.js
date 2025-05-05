@@ -1,3 +1,4 @@
+// word-back/src/socket/auth.js
 import jwt from 'jsonwebtoken';
 
 export const handleAuth = (socket, onAuthSuccess) => {

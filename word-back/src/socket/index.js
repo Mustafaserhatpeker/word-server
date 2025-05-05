@@ -1,3 +1,4 @@
+//// word-back/src/socket/index.js
 import { handleAuth } from './auth.js';
 import { handleRoomJoin } from './roomManager.js';
 import { handleSendWord } from './messageHandler.js';

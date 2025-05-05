@@ -1,3 +1,4 @@
+// word-back/src/socket/disconnectHandler.js
 export const handleDisconnect = (socket, roomWaitList) => {
     socket.on('disconnect', () => {
         for (const roomId in roomWaitList) {
