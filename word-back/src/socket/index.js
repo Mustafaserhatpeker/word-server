@@ -5,13 +5,13 @@ export const socketHandler = (io) => {
         console.log('🔌 Bir kullanıcı bağlandı:', socket.id);
 
         let clickCount = 0;
-        let username = null;
+        let email = null;
 
         // Front-end'den token ile gelmesini bekliyoruz
         socket.on('authenticate', (token) => {
             try {
                 const decoded = jwt.verify(token, process.env.JWT_SECRET);
-                username = decoded.username; // Token'da username varsa
+                email = decoded.email; // Token'da email varsa
                 console.log(`✅ Kullanıcı doğrulandı: ${email}`);
             } catch (err) {
                 console.log('❌ Token doğrulama başarısız');
@@ -21,13 +21,13 @@ export const socketHandler = (io) => {
         });
 
         socket.on('buttonClicked', () => {
-            if (!username) {
+            if (!email) {
                 console.log('❗ Önce kimlik doğrulaması yapılmalı!');
                 return;
             }
 
             clickCount += 1;
-            const msg = `${username} ${clickCount}. kez butona bastı`;
+            const msg = `${email} ${clickCount}. kez butona bastı`;
             console.log('🖱️', msg);
             socket.emit('buttonResponse', msg);
         });
