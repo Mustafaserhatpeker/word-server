@@ -4,6 +4,6 @@ export const handleDisconnect = (socket, roomWaitList) => {
         for (const roomId in roomWaitList) {
             roomWaitList[roomId] = roomWaitList[roomId].filter(user => user.socketId !== socket.id);
         }
-        console.log('❌ A user disconnected:', socket.id);
+        console.log('❌ Bir Kullanıcının bağlantısı kesildi:', socket.id);
     });
 };

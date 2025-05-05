@@ -12,7 +12,7 @@ export const socketHandler = (io) => {
     const roomTimers = {}; // yeni: süre takip
 
     io.on('connection', (socket) => {
-        console.log('🔌 A user connected:', socket.id);
+        console.log('🔌 Bir Kullanıcı Bağlandı:', socket.id);
         let username = null;
 
         handleAuth(socket, (decodedUsername) => {

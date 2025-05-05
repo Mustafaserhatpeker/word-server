@@ -1,4 +1,3 @@
-// word-back/src/socket/messageHandler.js
 import { startTurnTimer } from './roomManager.js';
 
 export const handleSendWord = (io, socket, roomMessages, roomTurn, roomTimers, getUsername) => {
@@ -7,11 +6,11 @@ export const handleSendWord = (io, socket, roomMessages, roomTurn, roomTimers, g
         if (!username || !roomId || !word) return;
 
         if (roomTurn[roomId] !== username) {
-            socket.emit('systemMessage', '⛔ It is not your turn!');
+            socket.emit('systemMessage', '⛔ Sıra sizde değil!');
             return;
         }
 
-        const msg = `[${username}] sent a word: ${word}`;
+        const msg = `[${username}] bir kelime gönderdi: ${word}`;
         if (!roomMessages[roomId]) roomMessages[roomId] = [];
         roomMessages[roomId].push(msg);
         io.to(roomId).emit('wordResponse', msg);
@@ -25,7 +24,7 @@ export const handleSendWord = (io, socket, roomMessages, roomTurn, roomTimers, g
         const nextTurn = usernamesInRoom.find(u => u !== username);
         roomTurn[roomId] = nextTurn;
 
-        io.to(roomId).emit('systemMessage', `🔁 Now it's ${nextTurn}'s turn.`);
+        io.to(roomId).emit('systemMessage', `🔁 Şimdi sıra ${nextTurn}'de.`);
 
         // Yeni süre başlat
         startTurnTimer(io, roomId, nextTurn, roomTimers, roomMessages, roomTurn);

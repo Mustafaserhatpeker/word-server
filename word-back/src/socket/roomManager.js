@@ -1,12 +1,12 @@
 export const handleRoomJoin = (io, socket, roomMessages, roomWaitList, roomInitialized, roomTurn, roomTimers, getUsername) => {
-    socket.on('joinRoom', ({ roomId, timerDuration }) => { // Front-end'den süre alınıyor
+    socket.on('joinRoom', ({ roomId, timerDuration }) => { // Süre front-end'den alınıyor
         const username = getUsername();
         if (!username) return;
 
         if (roomInitialized[roomId]) {
             socket.join(roomId);
             socket.emit('roomHistory', roomMessages[roomId] || []);
-            io.to(roomId).emit('systemMessage', `${username} joined the room`);
+            io.to(roomId).emit('systemMessage', `${username} odaya katıldı`);
             return;
         }
 
@@ -14,7 +14,7 @@ export const handleRoomJoin = (io, socket, roomMessages, roomWaitList, roomIniti
 
         if (roomWaitList[roomId].length === 0) {
             roomWaitList[roomId].push({ socketId: socket.id, username });
-            socket.emit('waiting', `Waiting for another user to join room ${roomId}`);
+            socket.emit('waiting', `${roomId} odasına katılmak için başka bir kullanıcı bekleniyor`);
         } else {
             const waitingUser = roomWaitList[roomId].shift();
             const waitingSocket = io.sockets.sockets.get(waitingUser.socketId);
@@ -28,13 +28,13 @@ export const handleRoomJoin = (io, socket, roomMessages, roomWaitList, roomIniti
             socket.emit('roomHistory', roomMessages[roomId]);
             waitingSocket.emit('roomHistory', roomMessages[roomId]);
 
-            io.to(roomId).emit('systemMessage', `${username} and ${waitingUser.username} have joined the room`);
+            io.to(roomId).emit('systemMessage', `${username} ve ${waitingUser.username} odaya katıldı`);
 
-            // Sıra belirle (random)
+            // Sıra belirle (rastgele)
             const firstPlayer = Math.random() < 0.5 ? username : waitingUser.username;
             roomTurn[roomId] = firstPlayer;
 
-            io.to(roomId).emit('systemMessage', `🎲 ${firstPlayer} will start first.`);
+            io.to(roomId).emit('systemMessage', `🎲 İlk sırada ${firstPlayer} başlayacak.`);
 
             // Süreyi kaydet
             const durationInMs = (timerDuration || 2) * 60 * 1000; // Varsayılan süre: 2 dakika
@@ -49,7 +49,7 @@ export const handleRoomJoin = (io, socket, roomMessages, roomWaitList, roomIniti
         const username = getUsername();
         socket.leave(roomId);
         clearTimeout(roomTimers[roomId]?.timeoutId);
-        io.to(roomId).emit('systemMessage', `${username} has left the room`);
+        io.to(roomId).emit('systemMessage', `${username} odadan ayrıldı`);
     });
 };
 
@@ -63,7 +63,7 @@ function startTurnTimer(io, roomId, username, roomTimers, roomMessages, roomTurn
 
     // Yeni zamanlayıcıyı başlat
     roomTimers[roomId].timeoutId = setTimeout(() => {
-        io.to(roomId).emit('systemMessage', `⏰ ${username} did not respond in time. Room is closed.`);
+        io.to(roomId).emit('systemMessage', `⏰ ${username} zamanında yanıt vermedi. Oda kapatıldı.`);
         const sockets = Array.from(io.sockets.adapter.rooms.get(roomId) || []);
         sockets.forEach((id) => {
             const sock = io.sockets.sockets.get(id);
@@ -74,7 +74,7 @@ function startTurnTimer(io, roomId, username, roomTimers, roomMessages, roomTurn
         delete roomMessages[roomId];
         delete roomTurn[roomId];
         delete roomTimers[roomId];
-    }, duration); // Dinamik süre kullanılıyor
+    }, duration);
 }
 
 export { startTurnTimer };
