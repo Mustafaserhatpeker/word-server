@@ -1,77 +1,120 @@
 import jwt from 'jsonwebtoken';
 
 export const socketHandler = (io) => {
-    const roomMessages = {}; // Her oda için mesaj geçmişini tutar
+    const roomMessages = {}; // Tracks message history for each room
+    const roomWaitList = {}; // Tracks users waiting in each room
+    const roomInitialized = {}; // Tracks whether a room is initialized
 
     io.on('connection', (socket) => {
-        console.log('🔌 Bir kullanıcı bağlandı:', socket.id);
+        console.log('🔌 A user connected:', socket.id);
 
         let username = null;
 
-        // Kullanıcıyı kimlik doğrulama
+        // Authenticate the user
         socket.on('authenticate', ({ token }) => {
             try {
                 const decoded = jwt.verify(token, process.env.JWT_SECRET);
-                username = decoded.username; // Token'da username varsa
-                console.log(`✅ Kullanıcı doğrulandı: ${username}`);
+                username = decoded.username; // Extract username from token
+                console.log(`✅ User authenticated: ${username}`);
             } catch (err) {
-                console.log('❌ Token doğrulama başarısız');
+                console.log('❌ Token verification failed');
                 socket.emit('unauthorized');
                 socket.disconnect();
             }
         });
 
-        // Odaya katılma
+        // Join a room
         socket.on('joinRoom', (roomId) => {
             if (!username) {
-                console.log('❗ Önce kimlik doğrulaması yapılmalı!');
+                console.log('❗ Authentication is required first!');
                 return;
             }
 
-            // Kullanıcıyı eski odadan çıkar
-            const rooms = Array.from(socket.rooms).filter((room) => room !== socket.id);
-            rooms.forEach((room) => socket.leave(room));
+            // If the room is already initialized, allow direct joining
+            if (roomInitialized[roomId]) {
+                socket.join(roomId);
+                console.log(`✅ ${username} joined room ${roomId}`);
 
-            // Kullanıcıyı yeni odaya ekle
-            socket.join(roomId);
-            console.log(`✅ ${username} ${roomId} odasına katıldı`);
+                // Send room history to the user
+                socket.emit('roomHistory', roomMessages[roomId] || []);
 
-            // Oda için mesaj geçmişini oluştur (yeni oda ise)
-            if (!roomMessages[roomId]) {
-                roomMessages[roomId] = [];
+                // Notify room members
+                io.to(roomId).emit('systemMessage', `${username} joined the room`);
+                return;
             }
 
-            // Oda geçmişini gönder
-            socket.emit('roomHistory', roomMessages[roomId]);
+            // Add user to the waiting list for the room
+            if (!roomWaitList[roomId]) {
+                roomWaitList[roomId] = [];
+            }
 
-            // Odaya katılım mesajını yayınla
-            io.to(roomId).emit('systemMessage', `${username} odaya katıldı`);
+            // Check if the room already has someone waiting
+            if (roomWaitList[roomId].length === 0) {
+                // No one else is waiting, put the user on hold
+                roomWaitList[roomId].push({ socketId: socket.id, username });
+                console.log(`⏳ ${username} is waiting for another user to join room ${roomId}`);
+                socket.emit('waiting', `Waiting for another user to join room ${roomId}`);
+            } else {
+                // Another user is already waiting, pair them together
+                const waitingUser = roomWaitList[roomId].shift(); // Remove the first waiting user
+                const waitingSocket = io.sockets.sockets.get(waitingUser.socketId);
+
+                // Allow both users to join the room
+                socket.join(roomId);
+                waitingSocket.join(roomId);
+
+                // Mark the room as initialized
+                roomInitialized[roomId] = true;
+
+                console.log(`✅ ${username} and ${waitingUser.username} joined room ${roomId}`);
+
+                // Initialize room message history if it doesn't exist
+                if (!roomMessages[roomId]) {
+                    roomMessages[roomId] = [];
+                }
+
+                // Send room history to both users
+                socket.emit('roomHistory', roomMessages[roomId]);
+                waitingSocket.emit('roomHistory', roomMessages[roomId]);
+
+                // Notify room members
+                io.to(roomId).emit('systemMessage', `${username} and ${waitingUser.username} have joined the room`);
+            }
         });
 
-        // Kelime gönderme olayı
+        // Send a word event
         socket.on('sendWord', ({ roomId, word }) => {
             if (!username || !roomId || !word) {
-                console.log('❗ Kullanıcı doğrulanmamış, oda ID veya kelime eksik!');
+                console.log('❗ Authentication is missing, room ID or word is invalid!');
                 return;
             }
 
-            const msg = `[${username}] kelime gönderdi: ${word}`;
+            const msg = `[${username}] sent a word: ${word}`;
             console.log('📝', msg);
 
             // Mesajı odaya ekle ve yayınla
+            if (!roomMessages[roomId]) {
+                roomMessages[roomId] = []; // Eğer oda geçmişi yoksa bir dizi başlat
+            }
             roomMessages[roomId].push(msg);
             io.to(roomId).emit('wordResponse', msg);
         });
 
-        // Kullanıcı ayrıldığında
+        // Leave the room
         socket.on('leaveRoom', (roomId) => {
             socket.leave(roomId);
-            console.log(`❌ ${username} ${roomId} odasından ayrıldı`);
-            io.to(roomId).emit('systemMessage', `${username} odadan ayrıldı`);
+            console.log(`❌ ${username} left room ${roomId}`);
+            io.to(roomId).emit('systemMessage', `${username} has left the room`);
         });
 
+        // Disconnect event
         socket.on('disconnect', () => {
-            console.log('❌ Kullanıcı ayrıldı:', socket.id);
+            // Remove user from all wait lists
+            for (const roomId in roomWaitList) {
+                roomWaitList[roomId] = roomWaitList[roomId].filter(user => user.socketId !== socket.id);
+            }
+
+            console.log('❌ A user disconnected:', socket.id);
         });
     });
 };
