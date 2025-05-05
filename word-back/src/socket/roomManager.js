@@ -1,4 +1,4 @@
-export const handleRoomJoin = (io, socket, roomMessages, roomWaitList, roomInitialized, getUsername) => {
+export const handleRoomJoin = (io, socket, roomMessages, roomWaitList, roomInitialized, roomTurn, getUsername) => {
     socket.on('joinRoom', (roomId) => {
         const username = getUsername();
         if (!username) {
@@ -34,6 +34,11 @@ export const handleRoomJoin = (io, socket, roomMessages, roomWaitList, roomIniti
             waitingSocket.emit('roomHistory', roomMessages[roomId]);
 
             io.to(roomId).emit('systemMessage', `${username} and ${waitingUser.username} have joined the room`);
+
+            // Sıra belirle (random)
+            const firstPlayer = Math.random() < 0.5 ? username : waitingUser.username;
+            roomTurn[roomId] = firstPlayer;
+            io.to(roomId).emit('systemMessage', `🎲 ${firstPlayer} will start first.`);
         }
     });
 
