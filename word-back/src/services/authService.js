@@ -40,7 +40,7 @@ export const loginUser = async (email, password) => {
     throw AppError.unauthorized('Şifre hatalı.');
   }
 
-  const token = signToken(user._id);
+  const token = signToken(user._id, user.username);
 
   return {
     user: {
