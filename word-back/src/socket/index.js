@@ -4,15 +4,18 @@ export const socketHandler = (io) => {
     io.on('connection', (socket) => {
         console.log('🔌 Bir kullanıcı bağlandı:', socket.id);
 
-        let clickCount = 0;
         let username = null;
+        let room = null;
 
-
-        socket.on('authenticate', (token) => {
+        // Kullanıcıyı kimlik doğrulama ve bir odaya yerleştirme
+        socket.on('authenticate', ({ token, roomId }) => {
             try {
                 const decoded = jwt.verify(token, process.env.JWT_SECRET);
                 username = decoded.username; // Token'da username varsa
-                console.log(`✅ Kullanıcı doğrulandı: ${username}`);
+                room = roomId; // Kullanıcıdan gelen roomId
+                socket.join(room); // Kullanıcıyı odaya dahil et
+                console.log(`✅ Kullanıcı doğrulandı: ${username}, Oda: ${room}`);
+                io.to(room).emit('systemMessage', `${username} odaya katıldı`);
             } catch (err) {
                 console.log('❌ Token doğrulama başarısız');
                 socket.emit('unauthorized');
@@ -20,19 +23,23 @@ export const socketHandler = (io) => {
             }
         });
 
+        // Buton tıklama olayı
         socket.on('buttonClicked', () => {
-            if (!username) {
-                console.log('❗ Önce kimlik doğrulaması yapılmalı!');
+            if (!username || !room) {
+                console.log('❗ Önce kimlik doğrulaması yapılmalı ve bir odaya katılmalısınız!');
                 return;
             }
 
-            clickCount += 1;
-            const msg = `${username} ${clickCount}. kez butona bastı`;
+            const msg = `${username} butona bastı`;
             console.log('🖱️', msg);
-            socket.emit('buttonResponse', msg);
+            io.to(room).emit('buttonResponse', msg);
         });
 
+        // Kullanıcı ayrıldığında
         socket.on('disconnect', () => {
+            if (room) {
+                io.to(room).emit('systemMessage', `${username} odadan ayrıldı`);
+            }
             console.log('❌ Kullanıcı ayrıldı:', socket.id);
         });
     });
