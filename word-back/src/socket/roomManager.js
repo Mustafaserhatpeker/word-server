@@ -1,14 +1,10 @@
-export const handleRoomJoin = (io, socket, roomMessages, roomWaitList, roomInitialized, roomTurn, getUsername) => {
+export const handleRoomJoin = (io, socket, roomMessages, roomWaitList, roomInitialized, roomTurn, roomTimers, getUsername) => {
     socket.on('joinRoom', (roomId) => {
         const username = getUsername();
-        if (!username) {
-            console.log('❗ Authentication is required first!');
-            return;
-        }
+        if (!username) return;
 
         if (roomInitialized[roomId]) {
             socket.join(roomId);
-            console.log(`✅ ${username} joined room ${roomId}`);
             socket.emit('roomHistory', roomMessages[roomId] || []);
             io.to(roomId).emit('systemMessage', `${username} joined the room`);
             return;
@@ -18,7 +14,6 @@ export const handleRoomJoin = (io, socket, roomMessages, roomWaitList, roomIniti
 
         if (roomWaitList[roomId].length === 0) {
             roomWaitList[roomId].push({ socketId: socket.id, username });
-            console.log(`⏳ ${username} is waiting for another user to join room ${roomId}`);
             socket.emit('waiting', `Waiting for another user to join room ${roomId}`);
         } else {
             const waitingUser = roomWaitList[roomId].shift();
@@ -38,14 +33,39 @@ export const handleRoomJoin = (io, socket, roomMessages, roomWaitList, roomIniti
             // Sıra belirle (random)
             const firstPlayer = Math.random() < 0.5 ? username : waitingUser.username;
             roomTurn[roomId] = firstPlayer;
+
             io.to(roomId).emit('systemMessage', `🎲 ${firstPlayer} will start first.`);
+
+            // İlk süreyi başlat
+            startTurnTimer(io, roomId, firstPlayer, roomTimers, roomMessages, roomTurn);
         }
     });
 
     socket.on('leaveRoom', (roomId) => {
         const username = getUsername();
         socket.leave(roomId);
-        console.log(`❌ ${username} left room ${roomId}`);
+        clearTimeout(roomTimers[roomId]);
         io.to(roomId).emit('systemMessage', `${username} has left the room`);
     });
 };
+
+// Timer başlatıcı fonksiyon
+function startTurnTimer(io, roomId, username, roomTimers, roomMessages, roomTurn) {
+    clearTimeout(roomTimers[roomId]);
+
+    roomTimers[roomId] = setTimeout(() => {
+        io.to(roomId).emit('systemMessage', `⏰ ${username} did not respond in time. Room is closed.`);
+        const sockets = Array.from(io.sockets.adapter.rooms.get(roomId) || []);
+        sockets.forEach((id) => {
+            const sock = io.sockets.sockets.get(id);
+            if (sock) sock.disconnect();
+        });
+
+        // Temizleme
+        delete roomMessages[roomId];
+        delete roomTurn[roomId];
+        delete roomTimers[roomId];
+    }, 2 * 60 * 1000); // 2 dakika
+}
+
+export { startTurnTimer };

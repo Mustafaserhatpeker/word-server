@@ -7,9 +7,8 @@ export const socketHandler = (io) => {
     const roomMessages = {};
     const roomWaitList = {};
     const roomInitialized = {};
-    const roomTurn = {}; // Sıra bilgisi
-    const roomTimers = {}; // her oda için timeout ID'leri
-
+    const roomTurn = {};
+    const roomTimers = {}; // yeni: süre takip
 
     io.on('connection', (socket) => {
         console.log('🔌 A user connected:', socket.id);
@@ -17,7 +16,7 @@ export const socketHandler = (io) => {
 
         handleAuth(socket, (decodedUsername) => {
             username = decodedUsername;
-            socket.username = username; // socket nesnesine kullanıcıyı ata
+            socket.username = username;
         });
 
         handleRoomJoin(io, socket, roomMessages, roomWaitList, roomInitialized, roomTurn, roomTimers, () => username);
