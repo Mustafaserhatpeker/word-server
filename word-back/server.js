@@ -3,7 +3,7 @@ import http from 'http';
 import { Server } from 'socket.io';
 import app from './app.js';
 import { connectDB } from './src/config/database.js';
-import { registerSocketHandlers } from './src/socket/socketHandler.js';
+
 
 const PORT = process.env.PORT || 5001;
 
@@ -23,6 +23,4 @@ connectDB().then(() => {
     console.log(`✅ Server running on http://localhost:${PORT}`);
   });
 
-  // Socket event handler'ları burada başlatılacak
-  registerSocketHandlers(io);
 });
