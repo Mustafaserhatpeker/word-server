@@ -55,26 +55,38 @@ export const handleRoomJoin = (io, socket, roomMessages, roomWaitList, roomIniti
 
 // Timer başlatıcı fonksiyon
 function startTurnTimer(io, roomId, username, roomTimers, roomMessages, roomTurn) {
-    // Oda süresini al
     const duration = roomTimers[roomId]?.duration || (2 * 60 * 1000); // Varsayılan süre: 2 dakika
 
-    // Daha önceki zamanlayıcıyı temizle
-    clearTimeout(roomTimers[roomId]?.timeoutId);
+    if (roomTimers[roomId]?.timeoutId) {
+        clearTimeout(roomTimers[roomId].timeoutId);
+    }
 
-    // Yeni zamanlayıcıyı başlat
-    roomTimers[roomId].timeoutId = setTimeout(() => {
-        io.to(roomId).emit('systemMessage', `⏰ ${username} zamanında yanıt vermedi. Oda kapatıldı.`);
-        const sockets = Array.from(io.sockets.adapter.rooms.get(roomId) || []);
-        sockets.forEach((id) => {
-            const sock = io.sockets.sockets.get(id);
-            if (sock) sock.disconnect();
-        });
+    const timeoutId = setTimeout(() => {
+        if (roomTurn[roomId] === username) {
+            io.to(roomId).emit('systemMessage', `⏰ ${username} zamanında yanıt vermedi. Oda kapatıldı.`);
 
-        // Temizleme
-        delete roomMessages[roomId];
-        delete roomTurn[roomId];
-        delete roomTimers[roomId];
+            const sockets = Array.from(io.sockets.adapter.rooms.get(roomId) || []);
+            sockets.forEach((id) => {
+                const sock = io.sockets.sockets.get(id);
+                if (sock) sock.disconnect();
+            });
+
+            delete roomMessages[roomId];
+            delete roomTurn[roomId];
+            delete roomTimers[roomId];
+        }
     }, duration);
+
+    // 👇👇👇 Yeni emit satırları
+    io.to(roomId).emit("turnChange", username); // sadece sıradaki kişi bilgisi
+    io.to(roomId).emit("turnStarted", {
+        username,
+        duration,
+        startTime: Date.now(),
+    });
+
+    roomTimers[roomId].timeoutId = timeoutId;
 }
+
 
 export { startTurnTimer };

@@ -15,18 +15,21 @@ export const handleSendWord = (io, socket, roomMessages, roomTurn, roomTimers, g
         roomMessages[roomId].push(msg);
         io.to(roomId).emit('wordResponse', msg);
 
-        // Sırayı değiştir
+        // Sıradaki diğer kullanıcıyı bul (tur dönüşümlü)
         const socketsInRoom = Array.from(io.sockets.adapter.rooms.get(roomId) || []);
         const usernamesInRoom = socketsInRoom
             .map(id => io.sockets.sockets.get(id)?.username)
             .filter(Boolean);
 
-        const nextTurn = usernamesInRoom.find(u => u !== username);
-        roomTurn[roomId] = nextTurn;
+        // Basit döngüsel sıralama
+        const currentIndex = usernamesInRoom.indexOf(username);
+        const nextIndex = (currentIndex + 1) % usernamesInRoom.length;
+        const nextTurn = usernamesInRoom[nextIndex];
 
+        roomTurn[roomId] = nextTurn;
         io.to(roomId).emit('systemMessage', `🔁 Şimdi sıra ${nextTurn}'de.`);
 
-        // Yeni süre başlat
+        // Yeni sıradaki oyuncu için timer başlat
         startTurnTimer(io, roomId, nextTurn, roomTimers, roomMessages, roomTurn);
     });
 };
